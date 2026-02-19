@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Exercise Science Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --thai-line-height: 1.8;
+            --thai-heading-line-height: 1.6;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            scroll-behavior: smooth;
+            line-height: var(--thai-line-height);
+            word-break: break-word;
+            overflow-x: hidden; /* ป้องกันการเลื่อนซ้ายขวาของทั้งหน้า */
+        }
+
+        /* Scroll Progress Bar */
+        #progress-container {
+            width: 100%;
+            height: 5px;
+            background: #e2e8f0;
+            position: fixed;
+            top: 64px;
+            left: 0;
+            z-index: 50;
+        }
+
+        #progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #3b82f6, #10b981);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .section-padding {
+            padding: 80px 1.25rem; /* ลด Padding บนมือถือ */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        @media (min-width: 768px) {
+            .section-padding {
+                padding: 100px 2rem;
+            }
+        }
+
+        .nav-link {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 0.875rem;
+        }
+
+        @media (min-width: 768px) {
+            .nav-link {
+                font-size: 1rem;
+            }
+        }
+
+        /* Background Colors per Section */
+        #physiology { background-color: #f8fbff; }
+        #technique { background-color: #f7fff9; }
+        #application { background-color: #fffdf5; }
+        #programming { background-color: #fffafa; }
+        #calculator { background-color: #fcfdfe; }
+
+        h1, h2, h3, h4 {
+            line-height: var(--thai-heading-line-height);
+            text-wrap: balance;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .custom-table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            margin-top: 1.5rem;
+            -webkit-overflow-scrolling: touch; /* ให้การ Scroll บน iOS ลื่นไหล */
+            background: white;
+        }
+
+        .custom-table {
+            width: 100%;
+            min-width: 600px; /* ลดความกว้างขั้นต่ำเพื่อให้แสดงผลบนมือถือได้เหมาะสม */
+            border-collapse: collapse;
+        }
+
+        @media (min-width: 768px) {
+            .custom-table {
+                min-width: 800px;
+            }
+        }
+
+        .custom-table th, .custom-table td {
+            padding: 12px 16px;
+            border: 1px solid #edf2f7;
+            text-align: left;
+        }
+
+        .star-active { color: #fbbf24; }
+        .star-inactive { color: #e2e8f0; }
+
+        /* ป้องกัน MathJax ล้นหน้าจอ */
+        .mjx-chtml {
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full bg-white shadow-sm h-16 flex items-center z-[100] border-b border-gray-100">
+        <div class="max-w-7xl mx-auto w-full flex justify-between items-center px-4">
+            <h1 class="font-bold text-blue-600 text-lg md:text-xl hidden sm:block tracking-tight">Clinical Hub</h1>
+            <div class="flex flex-1 sm:flex-none justify-start sm:justify-end items-center overflow-x-auto no-scrollbar space-x-4 md:space-x-6 font-semibold text-gray-500 py-2">
+                <a onclick="scrollToSection('physiology')" class="nav-link hover:text-blue-600">1. สรีรวิทยา</a>
+                <a onclick="scrollToSection('technique')" class="nav-link hover:text-green-600">2. เทคนิค</a>
+                <a onclick="scrollToSection('application')" class="nav-link hover:text-amber-600">3. กลุ่มบุคคล</a>
+                <a onclick="scrollToSection('programming')" class="nav-link hover:text-rose-600">4. โปรแกรม</a>
+                <a onclick="scrollToSection('calculator')" class="nav-link text-blue-600 font-bold border-b-2 border-blue-600">5. คำนวณ 1RM</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Progress Indicator -->
+    <div id="progress-container">
+        <div id="progress-bar"></div>
+    </div>
+
+    <!-- Section 1: Physiological Mechanisms -->
+    <section id="physiology" class="section-padding">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-2xl md:text-5xl font-extrabold text-blue-900 border-l-8 border-blue-600 pl-4 mb-6 md:mb-8 leading-relaxed md:leading-tight">
+                กลไกทางสรีรวิทยาของการพัฒนาสมรรถภาพกล้ามเนื้อ (Physiological Mechanisms)
+            </h2>
+            <div class="bg-white rounded-2xl md:rounded-3xl p-6 md:p-12 shadow-sm border border-blue-50">
+                <p class="mb-8 text-base md:text-lg text-gray-700 leading-relaxed text-justify">
+                    การพัฒนาสมรรถภาพของกล้ามเนื้อแต่ละด้านไม่ได้เกิดขึ้นจากกลไกเดียว แต่เป็นการทำงานประสานกันระหว่าง 
+                    <strong>ระบบประสาท (Neural System)</strong>, <strong>โครงสร้างกล้ามเนื้อ (Structural)</strong> และ <strong>ระบบพลังงาน (Metabolic System)</strong> โดยมีรายละเอียดเชิงลึกดังนี้:
+                </p>
+                
+                <div class="space-y-10 md:space-y-12">
+                    <div class="space-y-4">
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-900">1. กลไกการพัฒนา Strength (ความแข็งแรง)</h3>
+                        <p class="text-sm md:text-base font-bold text-gray-800 italic">จุดเน้น: ระบบประสาทสั่งการ (Neural Efficiency)</p>
+                        <p class="text-sm md:text-base text-gray-700">ในช่วง 4–8 สัปดาห์แรกของการฝึก ความแข็งแรงที่เพิ่มขึ้นเกือบทั้งหมดเกิดจากระบบประสาท ไม่ใช่ขนาดกล้ามเนื้อ ร่างกายพัฒนาผ่านกลไกดังนี้:</p>
+                        <ul class="space-y-3 text-sm md:text-base text-gray-700 list-disc ml-5 md:ml-6">
+                            <li><strong>Increased Motor Unit Recruitment:</strong> ปกติร่างกายจะกักตุนแรงไว้เพื่อความปลอดภัย แต่การฝึก Strength จะสอนให้สมองสามารถเรียกใช้ "หน่วยยนต์" (Motor Units) ออกมาทำงานพร้อมกันได้มากขึ้นในคราวเดียว</li>
+                            <li><strong>Rate Coding (Firing Frequency):</strong> เพิ่มความถี่ในการส่งสัญญาณประสาท ยิ่งส่งสัญญาณถี่ แรงที่สร้างออกมาก็จะยิ่งสูงและต่อเนื่อง</li>
+                            <li><strong>Inter-muscular Coordination:</strong> ฝึกความสัมพันธ์ระหว่างกล้ามเนื้อที่ทำงานหลัก (Agonist) และการผ่อนแรงของกล้ามเนื้อที่ต้าน (Antagonist) ทำให้การออกแรงลื่นไหลและทรงพลังมากขึ้น</li>
+                            <li><strong>Henneman's Size Principle:</strong> ร่างกายจะถูกบังคับให้ใช้เส้นใยกล้ามเนื้อขนาดใหญ่ (Type IIx) ซึ่งปกติจะเก็บไว้ใช้เฉพาะในสถานการณ์วิกฤตเท่านั้น เนื่องจากแรงต้านที่ได้รับสูง (&gt;85% 1RM)</li>
+                        </ul>
+                    </div>
+
+                    <div class="space-y-4 pt-8 border-t border-gray-100">
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-900">2. กลไกการพัฒนา Hypertrophy (ขนาดกล้ามเนื้อ)</h3>
+                        <p class="text-sm md:text-base font-bold text-gray-800 italic">จุดเน้น: การสร้างโปรตีนและโครงสร้างเซลล์ (Protein Synthesis)</p>
+                        <p class="text-sm md:text-base text-gray-700">การเพิ่มขนาดเกิดจากการที่อัตราการสร้างโปรตีน (Protein Synthesis) สูงกว่าการสลายโปรตีน (Protein Breakdown) โดยมี 3 กลไกกระตุ้นหลัก:</p>
+                        <ul class="space-y-3 text-sm md:text-base text-gray-700 list-disc ml-5 md:ml-6">
+                            <li><strong>Mechanical Tension:</strong> แรงดึงทางกลที่เกิดจากการยกน้ำหนักจะไปกระตุ้นตัวรับสัญญาณบนผิวเซลล์ (Mechanoreceptors) ส่งสัญญาณไปยังทางเดินโมเลกุล (เช่น mTOR pathway) เพื่อเริ่มการสร้างโปรตีน</li>
+                            <li><strong>Metabolic Stress:</strong> การฝึก 6–12 ครั้งจะทำให้เกิดการสะสมของ Lactate, Hydrogen ions และสารเคมีอื่นๆ (The Burn) ภาวะนี้จะกระตุ้นการหลั่งฮอร์โมน (Growth Hormone, IGF-1) และทำให้เซลล์บวม (Cell Swelling) ซึ่งเป็นสัญญาณบวกต่อการเติบโต</li>
+                            <li><strong>Muscle Damage:</strong> การเกิด Micro-tears (รอยฉีกขาดระดับจุลภาค) จะกระตุ้น <strong>Satellite Cells</strong> (เซลล์ต้นกำเนิดกล้ามเนื้อ) ให้เข้ามาซ่อมแซมและหลอมรวมกับเส้นใยเดิม ทำให้เส้นใยหนาขึ้น (Hypertrophy)</li>
+                            <li>ไม่ใช่เพิ่มจำนวนเส้นใย (Hyperplasia)</li>
+                        </ul>
+                    </div>
+
+                    <div class="space-y-4 pt-8 border-t border-gray-100">
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-900">3. กลไกการพัฒนา Power (พลังและความเร็ว)</h3>
+                        <p class="text-sm md:text-base font-bold text-gray-800 italic">จุดเน้น: อัตราการสร้างแรง (Rate of Force Development - RFD)</p>
+                        <p class="text-sm md:text-base text-gray-700">Power คือการใช้ Strength ในเวลาที่สั้นที่สุด (Force × Velocity) กลไกหลักคือ:</p>
+                        <ul class="space-y-3 text-sm md:text-base text-gray-700 list-disc ml-5 md:ml-6">
+                            <li><strong>Fast Twitch Fiber Dominance:</strong> เน้นการใช้งานและพัฒนาเส้นใยชนิดกระตุกเร็ว (Type II) ซึ่งมีความสามารถในการหดตัวได้รวดเร็วกว่าเส้นใยชนิดอื่น</li>
+                            <li><strong>Neural Drive (Rate of Force):</strong> ระบบประสาทจะฝึกการส่งสัญญาณประสาทแบบ "ระเบิด" (Explosive) คือการปล่อยสัญญาณประสาทปริมาณมหาศาลภายในเวลาไม่กี่มิลลิวินาที</li>
+                            <li><strong>Stretch-Shortening Cycle (SSC):</strong> ร่างกายจะใช้คุณสมบัติความยืดหยุ่นของเส้นเอ็น (Tendon) คล้ายกับหนังสติ๊ก คือการสะสมพลังงานจากการยืดออก (Eccentric) แล้วปลดปล่อยออกมาทันที (Concentric)</li>
+                        </ul>
+                    </div>
+
+                    <div class="space-y-4 pt-8 border-t border-gray-100">
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-900">4. กลไกการพัฒนา Endurance (ความทนทาน)</h3>
+                        <p class="text-sm md:text-base font-bold text-gray-800 italic">จุดเน้น: ประสิทธิภาพการใช้พลังงาน (Oxidative Capacity)</p>
+                        <p class="text-sm md:text-base text-gray-700">เน้นการปรับตัวเพื่อให้กล้ามเนื้อทำงานได้นานขึ้นโดยไม่ล้า กลไกหลักคือ:</p>
+                        <ul class="space-y-3 text-sm md:text-base text-gray-700 list-disc ml-5 md:ml-6">
+                            <li><strong>Mitochondrial Biogenesis:</strong> เพิ่มจำนวนและขนาดของ "ไมโทคอนเดรีย" ซึ่งเป็นโรงไฟฟ้าของเซลล์ ทำให้สร้างพลังงาน ATP แบบใช้ออกซิเจนได้เก่งขึ้น</li>
+                            <li><strong>Capillarization:</strong> เพิ่มความหนาแน่นของเส้นเลือดฝอยรอบเส้นใยกล้ามเนื้อ เพื่อให้การขนส่งออกซิเจนเข้าสู่เซลล์และการกำจัดของเสีย (Lactate) ทำได้รวดเร็วขึ้น</li>
+                            <li><strong>Oxidative Enzyme Activity:</strong> เพิ่มประสิทธิภาพของเอนไซม์ที่ใช้ในการเผาผลาญไขมันและคาร์โบไฮเดรต</li>
+                            <li><strong>Type I Fiber Adaptation:</strong> เส้นใยชนิดกระตุกช้า (Type I) จะมีความสามารถในการใช้พลังงานได้ประหยัดและทนทานต่อกรดแลกติกได้ดีขึ้น</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Matrix Table -->
+                <div class="mt-16">
+                    <h3 class="text-xl md:text-2xl font-bold text-gray-900 mb-6 text-center uppercase tracking-tight">ตารางสรุปกลไกการพัฒนา (The Physiology Matrix)</h3>
+                    <div class="custom-table-container">
+                        <table class="custom-table bg-white text-sm">
+                            <thead class="bg-slate-800 text-white">
+                                <tr>
+                                    <th>เป้าหมาย</th>
+                                    <th>ระบบที่เน้นปรับตัว</th>
+                                    <th>กลไกระดับเซลล์ที่สำคัญ</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-gray-700">
+                                <tr class="hover:bg-blue-50 transition-colors">
+                                    <td class="font-bold text-gray-900">Strength</td>
+                                    <td>ประสาท (Neural)</td>
+                                    <td>Motor Unit Recruitment & Size Principle</td>
+                                </tr>
+                                <tr class="bg-slate-50 hover:bg-orange-50 transition-colors">
+                                    <td class="font-bold text-gray-900">Hypertrophy</td>
+                                    <td>โครงสร้าง (Structural)</td>
+                                    <td>mTOR Pathway & Satellite Cell Activation</td>
+                                </tr>
+                                <tr class="hover:bg-purple-50 transition-colors">
+                                    <td class="font-bold text-gray-900">Power</td>
+                                    <td>ความเร็วสัญญาณ (Velocity)</td>
+                                    <td>RFD & Stretch-Shortening Cycle</td>
+                                </tr>
+                                <tr class="bg-slate-50 hover:bg-teal-50 transition-colors">
+                                    <td class="font-bold text-gray-900">Endurance</td>
+                                    <td>พลังงาน (Metabolic)</td>
+                                    <td>Mitochondrial Density & Capillarization</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-4 border-t border-gray-100 text-xs text-gray-500 italic">
+                    ข้อมูลอ้างอิง: Standard Exercise Physiology Textbooks (Powers & Howley; McArdle et al.) และงานวิจัยจาก JSCR/ACSM.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Clinical Guide to Exercise Technique -->
+    <section id="technique" class="section-padding">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-2xl md:text-5xl font-extrabold text-green-900 border-l-8 border-green-600 pl-4 mb-6 md:mb-8 leading-relaxed md:leading-tight">
+                คู่มือเทคนิคการเคลื่อนไหวและการเตรียมร่างกายเชิงคลินิก (Clinical Guide to Exercise Technique)
+            </h2>
+            <div class="bg-white rounded-2xl md:rounded-3xl p-6 md:p-12 shadow-sm border border-green-50">
+                <p class="mb-10 text-base md:text-lg text-gray-700 leading-relaxed text-justify">
+                    การทำความเข้าใจขนาดของยา (Dosage) เพียงอย่างเดียวไม่เพียงพอ คุณภาพของการเคลื่อนไหว (Quality of Movement) คือตัวกำหนดว่าแรงเครียดจะไปตกที่เนื้อเยื่อเป้าหมายหรือไปทำให้เกิดการบาดเจ็บ
+                </p>
+                
+                <div class="space-y-12">
+                    <div>
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-900 mb-6">1. การเตรียมร่างกาย (Warm-up & Cool-down)</h3>
+                        <p class="text-sm text-gray-500 mb-6 italic">ตามคำแนะนำของ ACSM (2018) การเตรียมตัวอย่างเหมาะสมช่วยลดความเสี่ยงต่อการเกิดภาวะหัวใจทำงานผิดจังหวะและอาการบาดเจ็บของระบบกล้ามเนื้อและกระดูก</p>
+                        
+                        <div class="grid md:grid-cols-2 gap-6 md:gap-8">
+                            <div class="p-5 md:p-6 bg-green-50 rounded-2xl border border-green-100 shadow-sm">
+                                <h4 class="font-bold text-green-800 mb-3 uppercase text-sm md:text-base">การ Warm-up (เตรียมความพร้อม)</h4>
+                                <ul class="text-xs md:text-sm space-y-3 text-gray-700">
+                                    <li><strong>ระยะเวลา:</strong> 5–10 นาที</li>
+                                    <li><strong>เป้าหมาย:</strong> เพิ่มอุณหภูมิร่างกาย (Core temperature) และความพร้อมของระบบประสาท</li>
+                                    <li><strong>รูปแบบที่แนะนำ: * General Warm-up:</strong> กิจกรรมเบาๆ เช่น เดินเร็ว หรือปั่นจักรยานลม
+                                        <ul class="ml-4 mt-2 list-circle space-y-2">
+                                            <li><strong>Dynamic Stretching:</strong> การยืดเหยียดแบบเคลื่อนไหว (หลีกเลี่ยงการยืดค้างนานๆ ก่อนฝึก Strength/Power)</li>
+                                            <li><strong>Specific Potentiation:</strong> ทำท่าออกกำลังกายที่จะฝึกจริงด้วยน้ำหนักเบาๆ (20-30% 1RM) เพื่อ "ปลุก" สัญญาณประสาท</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="p-5 md:p-6 bg-blue-50 rounded-2xl border border-blue-100 shadow-sm">
+                                <h4 class="font-bold text-blue-800 mb-3 uppercase text-sm md:text-base">การ Cool-down (การฟื้นฟู)</h4>
+                                <ul class="text-xs md:text-sm space-y-3 text-gray-700">
+                                    <li><strong>ระยะเวลา:</strong> 5–10 นาที</li>
+                                    <li><strong>เป้าหมาย:</strong> ค่อยๆ ลดอัตราการเต้นของหัวใจ และป้องกันภาวะเลือดค้างที่ส่วนปลาย (Venous pooling)</li>
+                                    <li><strong>รูปแบบที่แนะนำ:</strong>
+                                        <ul class="ml-4 mt-2 list-circle space-y-2">
+                                            <li><strong>Active Recovery:</strong> เดินช้าๆ จนชีพจรกลับสู่สภาวะปกติ</li>
+                                            <li><strong>Static Stretching:</strong> การยืดกล้ามเนื้อค้างไว้ (15–30 วินาที) เพื่อลดความตึงตัว</li>
+                                            <li class="italic text-[10px] md:text-xs"><strong>Journal Ref:</strong> Behm et al. (2016) ระบุว่าการยืดแบบ Static ในช่วง Cool-down ช่วยรักษาความยืดหยุ่นได้ดีที่สุด</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-8 border-t border-gray-100">
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-900 mb-6">2. เทคนิคการเคลื่อนไหวและท่าที่แนะนำแยกตามเป้าหมาย</h3>
+                        <div class="grid md:grid-cols-2 gap-6 md:gap-8 text-sm">
+                            <div class="space-y-3">
+                                <h4 class="font-bold text-slate-800 text-lg border-b pb-1">A. Muscle Strengthening</h4>
+                                <ul class="list-disc ml-5 space-y-2 text-xs md:text-sm">
+                                    <li><strong>เทคนิคการเคลื่อนไหว: * Bracing:</strong> เน้นความมั่นคงของแกนกลาง (Core stability) ตลอดเวลา
+                                        <ul class="ml-4 list-circle mt-1">
+                                            <li>Full ROM: เคลื่อนไหวให้สุดช่วงการเคลื่อนที่</li>
+                                            <li>Controlled Eccentric: ผ่อนน้ำหนักแบบควบคุม</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>ท่าที่แนะนำ:</strong> Squat, Deadlift, Bench Press</li>
+                                </ul>
+                            </div>
+                            <div class="space-y-3">
+                                <h4 class="font-bold text-orange-800 text-lg border-b pb-1">B. Muscle Hypertrophy</h4>
+                                <ul class="list-disc ml-5 space-y-2 text-xs md:text-sm">
+                                    <li><strong>เทคนิค:</strong>
+                                        <ul class="ml-4 list-circle mt-1">
+                                            <li>TUT: ขึ้น 2 วินาที ลง 3 วินาที</li>
+                                            <li>Mind-Muscle Connection</li>
+                                            <li>Near Failure: ฝึกจนเกือบหมดแรง</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>ท่าที่แนะนำ:</strong> Leg Press, Bicep Curls</li>
+                                </ul>
+                            </div>
+                            <div class="space-y-3 pt-4">
+                                <h4 class="font-bold text-purple-800 text-lg border-b pb-1">C. Muscle Power</h4>
+                                <ul class="list-disc ml-5 space-y-2 text-xs md:text-sm">
+                                    <li><strong>เทคนิค:</strong>
+                                        <ul class="ml-4 list-circle mt-1">
+                                            <li>Intention to Move Fast: Concentric ต้องเร็วที่สุด</li>
+                                            <li>Deceleration: ต้องเบรกหรือ Landing ได้ดี</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>ท่าที่แนะนำ:</strong> Box Jumps, Medicine Ball Slams</li>
+                                </ul>
+                            </div>
+                            <div class="space-y-3 pt-4">
+                                <h4 class="font-bold text-teal-800 text-lg border-b pb-1">D. Muscle Endurance</h4>
+                                <ul class="list-disc ml-5 space-y-2 text-xs md:text-sm">
+                                    <li><strong>เทคนิค:</strong>
+                                        <ul class="ml-4 list-circle mt-1">
+                                            <li>Rhythmic Movement: ต่อเนื่องไม่หยุดพัก</li>
+                                            <li>Breathing Pattern: หายใจสัมพันธ์กับการเคลื่อนที่</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>ท่าที่แนะนำ:</strong> Plank, Lunges (High reps)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-12">
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-900 mb-6 text-center uppercase tracking-tight">3. ตารางสรุปเปรียบเทียบเทคนิค</h3>
+                        <div class="custom-table-container">
+                            <table class="custom-table bg-white text-sm">
+                                <thead class="bg-slate-800 text-white">
+                                    <tr>
+                                        <th>เป้าหมาย</th>
+                                        <th>หัวใจสำคัญ</th>
+                                        <th>จังหวะ (Tempo)</th>
+                                        <th>ท่าทางที่เน้น</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr><td class="font-bold">Strength</td><td>แรงต้านสูงสุด</td><td>มั่นคงและควบคุมได้</td><td>Compound (ท่าใหญ่)</td></tr>
+                                    <tr class="bg-slate-50"><td class="font-bold">Hypertrophy</td><td>การล้าสะสม</td><td>ช้า-ปานกลาง (TUT)</td><td>ผสม (ใหญ่+ย่อย)</td></tr>
+                                    <tr><td class="font-bold">Power</td><td>ความเร็วการระเบิดแรง</td><td>ระเบิด (Explosive)</td><td>Functional / Dynamic</td></tr>
+                                    <tr class="bg-slate-50"><td class="font-bold">Endurance</td><td>ความต่อเนื่อง</td><td>สม่ำเสมอและลื่นไหล</td><td>Postural / Multi-reps</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12 pt-8 border-t border-gray-100 text-xs md:text-sm text-gray-500 leading-relaxed">
+                    <h4 class="font-bold text-gray-700 mb-4 uppercase">เอกสารอ้างอิงระดับสากล (References)</h4>
+                    <ol class="list-decimal ml-6 space-y-2">
+                        <li><strong>ACSM (2018).</strong> Guidelines for Exercise Testing and Prescription.</li>
+                        <li><strong>Schoenfeld, B. J. (2016).</strong> Science and Development of Muscle Hypertrophy.</li>
+                        <li><strong>Haff, G. G., & Triplett, N. T. (2016).</strong> NSCA Essentials of Strength and Conditioning.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Clinical Application -->
+    <section id="application" class="section-padding">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-2xl md:text-5xl font-extrabold text-amber-900 border-l-8 border-amber-600 pl-4 mb-6 md:mb-8 leading-relaxed md:leading-tight">
+                การประยุกต์ใช้การออกกำลังกายเชิงคลินิกจำแนกตามกลุ่มบุคคล
+            </h2>
+            <div class="bg-white rounded-2xl md:rounded-3xl p-6 md:p-12 shadow-sm border border-amber-100">
+                <p class="mb-10 text-base md:text-lg text-gray-700 leading-relaxed text-justify">
+                    การเลือกประเภทการฝึก (Strength, Hypertrophy, Power, Endurance) ต้องสอดคล้องกับความต้องการเฉพาะของแต่ละช่วงวัยและไลฟ์สไตล์
+                </p>
+
+                <div class="grid md:grid-cols-2 gap-6 md:gap-8">
+                    <!-- 1. คนทั่วไป -->
+                    <div class="p-5 md:p-6 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
+                        <h4 class="font-bold text-lg md:text-xl mb-3 text-blue-800">1. คนทั่วไป (General Population)</h4>
+                        <ul class="text-xs md:text-sm space-y-2 list-disc ml-5 text-gray-700">
+                            <li><strong>Priority:</strong> Endurance &gt; Hypertrophy &gt; Strength</li>
+                            <li><strong>Suitable:</strong> เน้นบุคลิกภาพ (Posture) และความทนทานทำงานทั้งวัน</li>
+                            <li class="italic text-gray-500">Form over Load (ท่าทางสำคัญกว่าน้ำหนัก)</li>
+                        </ul>
+                    </div>
+                    <!-- 2. นักกีฬา -->
+                    <div class="p-5 md:p-6 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
+                        <h4 class="font-bold text-lg md:text-xl mb-3 text-orange-800">2. นักกีฬา (Athletes)</h4>
+                        <ul class="text-xs md:text-sm space-y-2 list-disc ml-5 text-gray-700">
+                            <li><strong>Priority:</strong> Power & Strength &gt; ชนิดกีฬาเฉพาะ</li>
+                            <li><strong>Suitable:</strong> เน้น RFD (Rate of Force Development)</li>
+                            <li class="italic text-gray-500">ต้องฝึกตามวงจรฤดูกาล (Periodization)</li>
+                        </ul>
+                    </div>
+                    <!-- 3. เด็กและเยาวชน -->
+                    <div class="p-5 md:p-6 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
+                        <h4 class="font-bold text-lg md:text-xl mb-3 text-teal-800">3. เด็กและเยาวชน (&lt; 18 ปี)</h4>
+                        <ul class="text-xs md:text-sm space-y-2 list-disc ml-5 text-gray-700">
+                            <li><strong>Priority:</strong> Endurance & Bodyweight Strength</li>
+                            <li><strong>Suitable:</strong> เน้นทักษะการเคลื่อนไหว (Motor Skills)</li>
+                            <li class="font-bold text-red-600">"ห้าม" ทดสอบหา 1RM แบบ Direct (ยกหนักที่สุดครั้งเดียว)</li>
+                        </ul>
+                    </div>
+                    <!-- 4. ผู้สูงอายุ -->
+                    <div class="p-5 md:p-6 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
+                        <h4 class="font-bold text-lg md:text-xl mb-3 text-rose-800">4. ผู้สูงอายุ (Elderly)</h4>
+                        <ul class="text-xs md:text-sm space-y-2 list-disc ml-5 text-gray-700">
+                            <li><strong>Priority:</strong> Power &gt; Strength &gt; Endurance</li>
+                            <li><strong>Suitable:</strong> ความเร็วในการออกแรงลดลงเร็วกว่าความแข็งแรง จึงต้องฝึก Power ป้องกันการหกล้ม</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-16">
+                    <h3 class="text-xl md:text-2xl font-bold text-gray-900 mb-6 text-center uppercase tracking-tight">ตารางสรุปการเลือกประเภทการฝึก</h3>
+                    <div class="custom-table-container">
+                        <table class="custom-table bg-white text-sm">
+                            <thead class="bg-slate-800 text-white">
+                                <tr>
+                                    <th>กลุ่มบุคคล</th>
+                                    <th>Strength</th>
+                                    <th>Hypertrophy</th>
+                                    <th>Power</th>
+                                    <th>Endurance</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                <tr><td class="font-bold">คนทั่วไป</td><td>⭐⭐</td><td>⭐⭐⭐</td><td>⭐</td><td>⭐⭐⭐</td></tr>
+                                <tr class="bg-slate-50"><td class="font-bold">นักกีฬา</td><td>⭐⭐⭐</td><td>⭐⭐</td><td>⭐⭐⭐</td><td>⭐⭐</td></tr>
+                                <tr><td class="font-bold">เด็ก (&lt;18)</td><td>⭐ (เน้นท่า)</td><td>⭐</td><td>⭐</td><td>⭐⭐⭐</td></tr>
+                                <tr class="bg-slate-50"><td class="font-bold">ผู้สูงอายุ</td><td>⭐⭐⭐</td><td>⭐⭐</td><td>⭐⭐⭐ (หลัก)</td><td>⭐⭐</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-12 bg-amber-50 p-6 md:p-8 rounded-2xl md:rounded-3xl border border-amber-200">
+                    <h3 class="text-lg md:text-xl font-bold text-amber-900 mb-6 flex items-center"><i class="fas fa-lightbulb mr-3"></i> Clinical Pearls</h3>
+                    <ol class="space-y-4 text-xs md:text-sm text-gray-800">
+                        <li><strong>1. เด็ก:</strong> เน้น "ความสนุกและการเคลื่อนไหวที่หลากหลาย" เพื่อสร้างระบบประสาท</li>
+                        <li><strong>2. ผู้สูงอายุ:</strong> อย่ากลัวการฝึก Power แต่ให้ใช้ "น้ำหนักเบาและเน้นความเร็ว" (เช่น การดันกำแพงแล้วสปริงตัวกลับเร็วๆ)</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Deep Resistance Principles -->
+    <section id="programming" class="section-padding">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-2xl md:text-5xl font-extrabold text-rose-900 border-l-8 border-rose-600 pl-4 mb-6 md:mb-8 leading-relaxed md:leading-tight">
+                หลักการออกแบบโปรแกรมแรงต้าน (Resistance Training) เชิงลึก
+            </h2>
+            <div class="bg-white rounded-2xl md:rounded-3xl p-6 md:p-12 shadow-sm border border-rose-100">
+                <p class="mb-10 text-base md:text-lg text-gray-700 leading-relaxed text-justify">
+                    การกำหนดความหนัก (Intensity) และปริมาณ (Volume) ที่ถูกต้องคือหัวใจสำคัญเพื่อให้เกิดการปรับตัว (Adaptation)
+                </p>
+
+                <div class="space-y-12">
+                    <!-- 1. Muscle Strengthening -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg md:text-2xl font-bold text-gray-900 border-b-2 border-slate-200 pb-2">1. Muscle Strengthening (เพิ่มความแข็งแรง)</h3>
+                        <ul class="text-xs md:text-sm space-y-2 text-gray-700 list-disc ml-5 md:ml-6">
+                            <li><strong>น้ำหนัก (Load):</strong> &gt; 85% ของ 1RM</li>
+                            <li><strong>ครั้ง/เซต:</strong> 1–6 ครั้ง | <strong>เซต:</strong> 2–6 เซต</li>
+                            <li><strong>ความถี่:</strong> 2–3 วัน/สัปดาห์ | <strong>พัก:</strong> 2–5 นาที</li>
+                        </ul>
+                    </div>
+
+                    <!-- 2. Muscle Hypertrophy -->
+                    <div class="space-y-4 pt-8 border-t border-gray-100">
+                        <h3 class="text-lg md:text-2xl font-bold text-gray-900 border-b-2 border-orange-200 pb-2">2. Muscle Hypertrophy (เพิ่มขนาด)</h3>
+                        <ul class="text-xs md:text-sm space-y-2 text-gray-700 list-disc ml-5 md:ml-6">
+                            <li><strong>น้ำหนัก (Load):</strong> 67% – 85% ของ 1RM</li>
+                            <li><strong>ครั้ง/เซต:</strong> 6–12 ครั้ง | <strong>เซต:</strong> 3–6 เซต</li>
+                            <li><strong>พัก:</strong> 30–90 วินาที (เพื่อสร้าง Metabolic Stress)</li>
+                        </ul>
+                    </div>
+
+                    <!-- 3. Muscle Power -->
+                    <div class="space-y-4 pt-8 border-t border-gray-100">
+                        <h3 class="text-lg md:text-2xl font-bold text-gray-900 border-b-2 border-purple-200 pb-2">3. Muscle Power (เพิ่มพลัง/ความเร็ว)</h3>
+                        <ul class="text-xs md:text-sm space-y-2 text-gray-700 list-disc ml-5 md:ml-6">
+                            <li><strong>น้ำหนัก (Load):</strong> 30–60% 1RM (Upper) | 0–60% 1RM (Lower)</li>
+                            <li><strong>ครั้ง/เซต:</strong> 1–5 ครั้ง (เน้นคุณภาพความเร็ว)</li>
+                            <li><strong>พัก:</strong> 2–5 นาที (ระบบประสาทต้องสดชื่นที่สุด)</li>
+                        </ul>
+                    </div>
+
+                    <!-- 4. Muscle Endurance -->
+                    <div class="space-y-4 pt-8 border-t border-gray-100">
+                        <h3 class="text-lg md:text-2xl font-bold text-gray-900 border-b-2 border-teal-200 pb-2">4. Muscle Endurance (เพิ่มทนทาน)</h3>
+                        <ul class="text-xs md:text-sm space-y-2 text-gray-700 list-disc ml-5 md:ml-6">
+                            <li><strong>น้ำหนัก (Load):</strong> &lt; 67% ของ 1RM</li>
+                            <li><strong>ครั้ง/เซต:</strong> &gt; 12–20 ครั้ง | <strong>พัก:</strong> &lt; 30 วินาที</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-12 bg-slate-900 text-white p-6 md:p-8 rounded-2xl md:rounded-3xl border-l-8 border-rose-500 shadow-lg">
+                    <h3 class="text-lg md:text-xl font-bold mb-4 flex items-center text-rose-400">
+                        <i class="fas fa-stethoscope mr-3"></i> คำแนะนำสำหรับนักกายภาพบำบัด
+                    </h3>
+                    <p class="text-xs md:text-sm leading-relaxed">
+                        <strong>"ความต่อเนื่อง" (Consistency) สำคัญกว่าความหนักในช่วงแรก</strong> ควรเริ่มจาก Endurance หรือ Hypertrophy เพื่อสร้างฐานโครงสร้างกล้ามเนื้อที่ถูกต้อง ก่อนจะขยับไปสู่ Strength หรือ Power เพื่อป้องกันการบาดเจ็บครับ
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: 1RM Calculator -->
+    <section id="calculator" class="section-padding">
+        <div class="max-w-xl mx-auto w-full">
+            <h2 class="text-2xl md:text-4xl font-extrabold text-slate-800 mb-8 text-center uppercase tracking-tight px-4">
+                โปรแกรมคำนวณ One Rep Max (1RM)
+            </h2>
+            
+            <div class="bg-white p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-2xl border-2 border-slate-100 mx-auto">
+                <div class="mb-8 text-center">
+                    <p class="text-[10px] md:text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Brzycki Formula</p>
+                    <div class="bg-slate-900 text-white p-4 rounded-xl shadow-inner text-xs md:text-sm overflow-x-auto whitespace-nowrap">
+                        $$1RM = \frac{Weight}{1.0278 - (0.0278 \times Reps)}$$
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-xs md:text-sm font-bold text-slate-600 mb-2">น้ำหนักที่ยกได้ (กิโลกรัม)</label>
+                        <input type="number" id="input-weight" placeholder="เช่น 100" class="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-xl outline-none transition text-lg md:text-xl font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs md:text-sm font-bold text-slate-600 mb-2">จำนวนครั้งที่ทำได้ (Reps)</label>
+                        <input type="number" id="input-reps" placeholder="เช่น 5" class="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-xl outline-none transition text-lg md:text-xl font-bold">
+                    </div>
+                    <button onclick="calculate1RM()" class="w-full bg-slate-800 text-white font-black py-4 md:py-5 rounded-2xl hover:bg-slate-700 active:scale-95 transition-all shadow-xl text-base md:text-lg">
+                        เริ่มการคำนวณ
+                    </button>
+                </div>
+
+                <div id="result-box" class="mt-10 hidden animate-in fade-in duration-500">
+                    <div class="p-6 md:p-8 bg-blue-50 border-2 border-blue-100 rounded-2xl md:rounded-3xl text-center">
+                        <p class="text-blue-600 text-xs md:text-sm font-bold uppercase mb-2">ค่า 1RM ประมาณการของคุณ</p>
+                        <span id="result-val" class="text-5xl md:text-6xl font-black text-slate-900 leading-none">--</span>
+                        <span class="text-lg md:text-xl font-bold text-slate-400 block mt-2">kg</span>
+                    </div>
+                    
+                    <div class="mt-8 px-2">
+                        <h4 class="font-bold text-slate-700 mb-4 border-b pb-2 text-sm md:text-base">Training Load Distribution</h4>
+                        <div id="intensity-table" class="grid grid-cols-2 gap-2 md:gap-3">
+                            <!-- JS Generated -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-slate-900 text-white py-12 md:py-16 px-6 text-center">
+        <div class="max-w-4xl mx-auto px-4">
+            <h3 class="text-xl md:text-2xl font-bold mb-4">Clinical Exercise Science Hub</h3>
+            <p class="text-slate-400 text-xs md:text-sm leading-relaxed">แพลตฟอร์มเพื่อการเรียนรู้และยกระดับมาตรฐานการออกกำลังกายเชิงคลินิกสำหรับบุคลากรสายสุขภาพ</p>
+            <div class="mt-12 text-slate-500 text-[10px] md:text-xs">
+                &copy; 2024 Clinical Exercise Science Hub. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            const offset = 64; 
+            const bodyRect = document.body.getBoundingClientRect().top;
+            const elementRect = element.getBoundingClientRect().top;
+            const elementPosition = elementRect - bodyRect;
+            const offsetPosition = elementPosition - offset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+
+        window.onscroll = function() {
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height) * 100;
+            const bar = document.getElementById("progress-bar");
+            if (bar) bar.style.width = scrolled + "%";
+        };
+
+        function calculate1RM() {
+            const weightInput = document.getElementById('input-weight');
+            const repsInput = document.getElementById('input-reps');
+            const weight = parseFloat(weightInput.value);
+            const reps = parseInt(repsInput.value);
+            const resultBox = document.getElementById('result-box');
+            const resultVal = document.getElementById('result-val');
+            const intensityTable = document.getElementById('intensity-table');
+
+            if (!weight || !reps) {
+                return;
+            }
+
+            if (reps < 1) {
+                return;
+            }
+
+            let oneRM = weight / (1.0278 - (0.0278 * reps));
+            if(reps === 1) oneRM = weight;
+
+            resultVal.innerText = oneRM.toFixed(1);
+            resultBox.classList.remove('hidden');
+
+            const intensities = [95, 90, 85, 80, 75, 70, 65, 60, 50];
+            intensityTable.innerHTML = intensities.map(p => `
+                <div class="flex flex-col p-3 bg-white rounded-xl border border-slate-100 shadow-sm text-center">
+                    <span class="text-[10px] font-bold text-slate-400">${p}%</span>
+                    <span class="text-sm md:text-lg font-black text-slate-800">${(oneRM * (p / 100)).toFixed(1)} <small class="text-[10px]">kg</small></span>
+                </div>
+            `).join('');
+            
+            resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
